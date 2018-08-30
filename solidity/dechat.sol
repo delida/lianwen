@@ -31,7 +31,6 @@ contract DeChat {
       
 	}
 	
-	mapping(uint => ErcMapping) internal erc;	
 	mapping(bytes32 => topic) public topics;
 	mapping(bytes32 => subTopic) public subTopics;
 	mapping(bytes32 => bytes32[]) public topicAns; // main topic => [ans1, ans2,...]
@@ -42,24 +41,23 @@ contract DeChat {
 	uint public lastProcBlk;
 	uint public answerBond = 10 ** 17; // 0.1
 	uint public firstPrize = 50; //
-	uint public secondPrize = 30; //
+	uint public secondPrize = 20; //
 	uint public votePrize = 20; //
+	uint public modPrize = 9;
+	uint public devPrize = 1; 
 	uint public voteAwardCount = 100; //only firt 100 voter get reward
 	uint public maxExpBlk = 50;
 	
 	address internal owner;
+	address internal developer;
+	address internal moderator;
 
-	function DeChat() public {
+	function DeChat(address mod, address dev) public {
 		lastProcBlk = block.number;
 		owner = msg.sender;
-	}
-	
-	function withdrawtomain() public payable {
-		erc[block.number].ercAddress.push(msg.sender);
-		erc[block.number].ercAmount.push(msg.value);
-		owner.transfer(msg.value);
-	}
-	
+		moderator = mod;
+		developer = dev;
+	}	
 
 	function createTopic(uint award, uint expblk, string desc) public payable returns (bytes32) {
 		require(msg.value >= award );
@@ -135,21 +133,34 @@ contract DeChat {
 				if(phash == "" || topics[phash].closed) {
 				continue;
 				}
-                
+				
 				//best topic
 				bytes32 besthash = topics[phash].bestHash;
 				if(subTopics[besthash].owner != address(0) ){
 					subTopics[besthash].owner.transfer( topics[phash].award * firstPrize /100 );
 				}
+				
 				//award each voter for besthash
 				for( uint k=0; k<subTopics[besthash].voters.length; k++ ) {
 					subTopics[besthash].voters[k].transfer( topics[phash].award * votePrize /100/subTopics[besthash].voters.length );
 				}
+				
 				//second best topic
 				bytes32 secondBesthash = topics[phash].secondBestHash;
 				if(subTopics[secondBesthash].owner != address(0) ){
 					subTopics[secondBesthash].owner.transfer( topics[phash].award * secondPrize /100 );
 				}
+				
+				// award moderator
+				if(moderator != address(0) ){
+					moderator.transfer( topics[phash].award * modPrize /100 );
+				}
+				
+				// award developer
+				if(developer != address(0) ){
+					developer.transfer( topics[phash].award * devPrize /100 );
+				}
+				
 				//mark as closed
 				topics[phash].closed = true;
 				//swap with last one
