@@ -2,7 +2,84 @@ pragma solidity ^0.4.11;
 //David Chen
 //Dapp Dechat
 
-contract DeChat {
+contract DappBase {
+	struct RedeemMapping {
+        address[] userAddr;
+        uint[] userAmount;
+    }
+    
+    struct Task{
+        bytes32 hash;
+        address[] voters;
+        bool distDone;
+    }
+    
+    mapping(uint => RedeemMapping) internal redeem;
+    address[] public curNodeList;//
+    mapping(bytes32=>Task) task;
+    mapping(bytes32=>address[]) nodeVoters;
+    address internal owner;
+    
+	function DappBase() public payable {
+		owner = msg.sender;
+	}
+	
+	function redeemFromMicroChain() public payable {//The user takes the coin to the main chain erc20
+        redeem[block.number].userAddr.push(msg.sender);
+        redeem[block.number].userAmount.push(msg.value);
+    }
+    
+    function have(address[] addrs, address addr) public view returns (bool) {
+        uint i;
+        for (i = 0; i < addrs.length; i++) {
+            if(addrs[i] == addr) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    function updateNodeList(address[] newlist) public {
+        //if owner, can directly update
+        if(msg.sender==owner) {
+            curNodeList = newlist;
+        }
+        //count votes
+        bytes32 hash = sha3(newlist);
+        bytes32 oldhash = sha3(curNodeList);
+        if( hash == oldhash) return;
+        
+        bool res = have(nodeVoters[hash], msg.sender);
+        if (!res) {
+            nodeVoters[hash].push(msg.sender);
+            if(nodeVoters[hash].length > newlist.length/2) {
+                curNodeList = newlist;
+            }
+        }
+        
+        return;
+    }
+    
+    function postFlush(bytes32 flushhash, address[] tosend, uint[] amount) public { //tosend is array of [blk,add,amt]
+        require(have(curNodeList, msg.sender));
+        require(tosend.length == amount.length);
+        
+        bytes32 hash = sha3(flushhash, tosend, amount);
+        if( task[hash].distDone) return;
+        if(!have(task[hash].voters, msg.sender)) {
+            task[hash].voters.push(msg.sender);
+            if(task[hash].voters.length > curNodeList.length/2 ) {
+                //distribute
+                task[hash].distDone = true;
+                for(uint i=0; i<tosend.length; i++ ) {
+                    tosend[i].transfer(amount[i]);
+                }
+            }
+        }
+    }
+}
+
+contract DeChat is DappBase{
 	struct topic {
 		bytes32 hash;
 		address owner;
