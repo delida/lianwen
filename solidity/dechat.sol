@@ -101,12 +101,6 @@ contract DeChat is DappBase{
 		uint voteCount;
 		address[] voters;
 	}
-
-	struct ErcMapping {
-      address[] ercAddress;
-      uint[] ercAmount;
-      
-	}
 	
 	mapping(bytes32 => topic) public topics;
 	mapping(bytes32 => subTopic) public subTopics;
