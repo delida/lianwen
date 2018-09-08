@@ -1,0 +1,13 @@
+{
+    "subChainAddr": "0xed31050f99c4881475a387d36270e251a169cc0a",
+    "userAddr":"0xe7e52b94e9a82351302260ec39a300e9f00aee4c",
+    "marketableTokenAddr":"0x5630ed278580805e0187b336acab9a1361c684a9", 
+    "via": "0xd868337c1a4167b5c6d1e273a0044016ea044d82",
+    "pwd": "moac",
+    "vnodeIp": "http://120.78.146.107:8545",
+    "rpcIp": "119.23.27.43",
+    "port": "8549",
+    "packPerBlockTime": 10,
+    "decimals": 18
+    
+}
