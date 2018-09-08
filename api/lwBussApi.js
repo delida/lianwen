@@ -126,7 +126,6 @@ var Hexstring2btye = function(str){
     return hexA;
 }
 
-//contractInfo公共方法  
 var getContractInfo = function(ip, port, methodName, postParam) {
 	return new Promise(function(resolve, reject){
 		var data = {"jsonrpc": "2.0", "id": 0, "method": methodName, "params": postParam};
@@ -180,7 +179,8 @@ var getContractInfo = function(ip, port, methodName, postParam) {
 	});	
 };
 
-// 问题列表(1 获取个数  2 循环查找mapping下标  3 根据下标查找topic   4 组装list返回)	  yy
+// 问题列表   yes
+// 1 获取个数  2 循环查找mapping下标  3 根据下标查找topic   4 组装list返回)	
 var getTopicList = function (pageNum, pageSize) {
 	// 先获取个数
 	var postParam1 = {"SubChainAddr": subChainAddr,
@@ -332,7 +332,7 @@ var getTopicList = function (pageNum, pageSize) {
 	});
 }
 
-getTopicList(0,0)
+//getTopicList(0,0)
 
 // 创建问题    yes
 var createTopic = function (award, desc, duration, userAddr) {
