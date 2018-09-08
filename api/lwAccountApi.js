@@ -222,7 +222,14 @@ var loginUser = function (addr, pwd, keystore) {
 
 // moac兑换token   yes
 var buyMintToken = function (userAddr, value) {
-	scAccount.testbuyMintToken(userAddr, pwd, value);
+	var flag = 1;
+	try {
+		scAccount.testbuyMintToken(userAddr, pwd, value);
+	} catch (e) {
+		flag = 0;
+		console.log("buyMintToken error ----------" + e);
+	}
+	return flag;
 }
 //buyMintToken(userAddr, 4);
 

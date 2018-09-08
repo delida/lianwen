@@ -336,50 +336,70 @@ var getTopicList = function (pageNum, pageSize) {
 
 // 创建问题    yes
 var createTopic = function (award, desc, duration, userAddr) {
-	var postParam1 = {"SubChainAddr": subChainAddr, "Sender": userAddr};
 	
-	getContractInfo(ip, port, "ScsRPCMethod.GetNonce", postParam1).then(function(nonce){
-		console.log(nonce);
-		// 创建问题
-		scClient.createTopicSol(award, duration, desc, subChainAddr, nonce);
-		// 获取hash
-		var postParam2 = {
-				"SubChainAddr": subChainAddr,
-				"Sender": userAddr, 
-				"nonce": nonce
-		};
-		t = Date.now();
-		// 十秒打包区块，返回hash
-		sleep((packPerBlockTime + 3) * 1000);
-		getContractInfo(ip, port, "ScsRPCMethod.GetTxRlt", postParam2).then(function(topicHash){
-			console.log(topicHash);
-			return topicHash;
+	var result;
+	try {
+		var postParam1 = {"SubChainAddr": subChainAddr, "Sender": userAddr};
+		
+		getContractInfo(ip, port, "ScsRPCMethod.GetNonce", postParam1).then(function(nonce){
+			console.log(nonce);
+			// 创建问题
+			scClient.createTopicSol(award, duration, desc, subChainAddr, nonce);
+			// 获取hash
+			var postParam2 = {
+					"SubChainAddr": subChainAddr,
+					"Sender": userAddr, 
+					"nonce": nonce
+			};
+			t = Date.now();
+			// 十秒打包区块，返回hash
+			sleep((packPerBlockTime + 3) * 1000);
+			getContractInfo(ip, port, "ScsRPCMethod.GetTxRlt", postParam2).then(function(topicHash){
+				console.log(topicHash);
+				result.topicHash = topicHash;
+				result.isSuccess = 1;
+			});
 		});
-	});
+	} catch (e) {
+		console.log("创建问题时发生异常------" + e);
+		result.topicHash = "";
+		result.isSuccess = 0;
+	}
+	return result;
 	
 }
-//createTopic(1, "are you happy, if you are not happy, i will ask you if you are ok, if you are not ok?", 30, userAddr);
+createTopic(1, "are you happy, if you are not happy, i will ask you if you are ok, if you are not ok?", 30, userAddr);
 
 // 创建回答   yes
 var createSubTopic = function (topicHash, desc, userAddr) {
-	var postParam1 = {"SubChainAddr": subChainAddr, "Sender": userAddr};
-	
-	getContractInfo(ip, port, "ScsRPCMethod.GetNonce", postParam1).then(function(nonce){
-		// 创建回答
-		scClient.createSubTopicSol(desc, subChainAddr, topicHash, nonce);
-		// 获取hash
-		var postParam2 = {
-				"SubChainAddr": subChainAddr,
-				"Sender": userAddr, 
-				"nonce": nonce
-		};
-		t = Date.now();
-		sleep((packPerBlockTime + 2) * 1000);
-		getContractInfo(ip, port, "ScsRPCMethod.GetTxRlt", postParam2).then(function(subTopicHash){
-			console.log(subTopicHash);
-			return subTopicHash;
+	var result;
+	try {
+		var postParam1 = {"SubChainAddr": subChainAddr, "Sender": userAddr};
+		
+		getContractInfo(ip, port, "ScsRPCMethod.GetNonce", postParam1).then(function(nonce){
+			// 创建回答
+			scClient.createSubTopicSol(desc, subChainAddr, topicHash, nonce);
+			// 获取hash
+			var postParam2 = {
+					"SubChainAddr": subChainAddr,
+					"Sender": userAddr, 
+					"nonce": nonce
+			};
+			t = Date.now();
+			sleep((packPerBlockTime + 2) * 1000);
+			getContractInfo(ip, port, "ScsRPCMethod.GetTxRlt", postParam2).then(function(subTopicHash){
+				console.log(subTopicHash);
+				result.subTopicHash = subTopicHash;
+				result.isSuccess = 1;
+			});
 		});
-	});
+	} catch (e) {
+		console.log("创建回答发生异常------" + e);
+		result.subTopicHash = "";
+		result.isSuccess = 0;
+	}
+	return result;
+	
 }
 
 //createSubTopic("0x" + "45f0022282b85c71c1533fe2dd44d8c9ba5f05fbc311e25847d84f49e5726a0e", 
@@ -531,10 +551,18 @@ var getSubTopicList = function (topicHash, pageNum, pageSize) {
 
 // 点赞    yes
 var approveSubTopic = function (voter, subTopicHash) {
-	var postParam = {"SubChainAddr": subChainAddr, "Sender": voter};
-	getContractInfo(ip, port, "ScsRPCMethod.GetNonce", postParam).then(function(nonce){
-		scClient.voteOnTopic(voter, null, subChainAddr, subTopicHash, nonce)
-	});
+	var flag = 1;
+	try {
+		var postParam = {"SubChainAddr": subChainAddr, "Sender": voter};
+		getContractInfo(ip, port, "ScsRPCMethod.GetNonce", postParam).then(function(nonce){
+			scClient.voteOnTopic(voter, null, subChainAddr, subTopicHash, nonce)
+		});
+	} catch (e) {
+		flag = 0;
+		console.log("点赞发生异常------" + e);
+	}
+	return flag;
+	
 }
 //approveSubTopic(userAddr, "0x" + "ffc4756d92af05ac657150374a9b48f33e30b29192601470cf62792ada0656a4");
 
