@@ -122,6 +122,8 @@ contract DeChat is DappBase{
 	address internal owner;
 	address internal developer;
 	address internal moderator;
+	
+	mapping(address => topic[]) public myTopics; // index = 0x18
 
 	function DeChat(address mod, address dev) public {
 		lastProcBlk = block.number;
@@ -147,6 +149,7 @@ contract DeChat is DappBase{
 		newTopicIndex[hash]=newTopicList.length;
 		newTopicList.push(hash);
 
+		myTopics[msg.sender].push(topics[hash]);
 		return hash;
 	}
 	
@@ -172,6 +175,7 @@ contract DeChat is DappBase{
 			topics[parenthash].secondBestVoteCount = topics[parenthash].bestVoteCount;
 			topics[parenthash].bestHash = topichash;
 			topics[parenthash].bestVoteCount = subTopics[topichash].voteCount;
+			updateMyTopic(topics[parenthash]);
 			return;
 		}
 
@@ -179,6 +183,7 @@ contract DeChat is DappBase{
 			//replace secnd best
 			topics[parenthash].secondBestHash = topichash;
 			topics[parenthash].secondBestVoteCount = subTopics[topichash].voteCount;
+			updateMyTopic(topics[parenthash]);
 			return;
 		}
 	}
@@ -194,6 +199,23 @@ contract DeChat is DappBase{
 		//add to ans list
 		topicAns[parenthash].push(hash);
 		return hash;
+	}
+	
+	function updateMyTopic(topic t) private{
+		require(t.owner != address(0));
+		
+		topic[] tl = myTopics[t.owner];		
+        for (uint i=0; i < tl.length; i++) {
+			if (t.owner == tl[i].owner) {
+				tl[i] = t;
+			}
+		}
+	}
+	
+	function getMyTopic(address addr) public view returns (topic[]){
+		require(addr != address(0));
+		
+		return myTopics[addr];
 	}
 	
 	function autoCheck() public {
@@ -234,6 +256,7 @@ contract DeChat is DappBase{
 				
 				//mark as closed
 				topics[phash].closed = true;
+				updateMyTopic(topics[phash]);
 				//swap with last one
 				bytes32 last = newTopicList[newTopicList.length -1 ];
 				uint cur = newTopicIndex[phash];
