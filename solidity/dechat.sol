@@ -126,7 +126,7 @@ contract DeChat is DappBase{
 	
 	mapping(address => topic[]) public myTopics; // index = 0x18
 
-	function DeChat(address mod, address dev) public {
+	function DeChat(address mod, address dev) public payable {
 		lastProcBlk = block.number;
 		owner = msg.sender;
 		moderator = mod;
