@@ -86,6 +86,7 @@ contract DeChat is DappBase{
 		address owner;
 		string desc;
 		uint award;
+		uint startblk;
 		uint expblk;
 		uint bestVoteCount;
 		bytes32 bestHash;
@@ -144,6 +145,7 @@ contract DeChat is DappBase{
 		} else {
 			topics[hash].expblk = maxExpBlk;
 		}
+		topics[hash].startblk = block.number;
 		topics[hash].desc = desc;
 		//add loop value
 		expinfo[block.number + expblk].push(hash);
